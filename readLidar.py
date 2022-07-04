@@ -1,26 +1,56 @@
-# The MIT License (MIT)
-#
-# Copyright (c) 2019 Onion Corporation
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+import math
+import socket # for socket
+import sys
+import pygame
 
-import serial
+BLACK = (0, 0, 0)
+YELLOW = (255, 196, 5)
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+DARK_BLUE = (0, 50, 150)
+GREEN = (0, 255, 0)
+DARK_GREEN = (0, 100, 0)
+RED = (255, 0, 0)
+ORANGE = (100, 50, 0)
+
+pygame.init()
+clock = pygame.time.Clock()
+
+pygame.font.init()
+myfont = pygame.font.SysFont('Arial', 15)
+ 
+window_name = "Vision server test"
+frameWidth = 800  # should be the same as in vision server
+frameHeight = 800  # should be the same as in vision server
+size = [frameWidth, frameHeight]
+screen = pygame.display.set_mode(size)
+pygame.display.set_caption(window_name)
+center = (int(frameWidth / 2), int(frameHeight / 2))
+
+
+
+try:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print ("Socket successfully created")
+except socket.error as err:
+    print ("socket creation failed with error %s" %(err))
+
+port = 23
+
+try:
+    host_ip = socket.gethostbyname('192.168.0.20')
+except socket.gaierror:
+ 
+    # this means could not resolve the host
+    print ("there was an error resolving the host")
+    sys.exit()
+ 
+# connecting to the server
+s.connect((host_ip, port))
+ 
+print ("the socket has successfully connected")
+
+
 
 def checksum (frame):
     cs = int.from_bytes(frame[-2:], byteorder='big', signed=False)
@@ -30,6 +60,9 @@ def checksum (frame):
         result += int(i)
 
     return result == cs
+
+
+last_angle = 0
 
 def parseData (payload, payloadLen):
 
@@ -54,7 +87,20 @@ def parseData (payload, payloadLen):
         distance = int.from_bytes(payload[index+1:index+3], byteorder='big', signed=False)
         ang = angStart + 22.5*i/nSamples
         print ('%.2f: %.2f mm'%(ang, distance))
+
+        x= center[0] + distance/50 * math.sin(math.radians(ang))
+        y= center[1] + distance/50 * math.cos(math.radians(ang))
+        
+        if(ang<10):
+            screen.fill(BLACK)
+        #     last_angle = ang
+        # else:
+        #     last_angle = ang
+        pygame.draw.rect(screen, GREEN, pygame.Rect(x, y, 2, 2) )
+
         pass
+    pygame.display.flip()
+    # screen.fill(BLACK)
 
 def parseError (payload):
     speed = payload[0]
@@ -94,9 +140,5 @@ def onData(x):
         if processFrame(frame):
             frame = ''
 
-# portName = '/dev/tty.SLAB_USBtoUART' # For Mac OS X
-portName = 'COM14' # For Windows
-#portName = '/dev/ttyUSB0' # For Linux
-with serial.Serial(portName, 115200) as ser:
-    while 1:
-        onData(ser.read())
+while 1:
+    onData(s.recv(1))
