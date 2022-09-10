@@ -3,6 +3,12 @@ import socket  # for socket
 import sys
 import pygame
 
+IP = '192.168.8.150'
+port = 23
+scale = 20
+
+last_angle = 0
+
 BLACK = (0, 0, 0)
 YELLOW = (255, 196, 5)
 WHITE = (255, 255, 255)
@@ -19,7 +25,7 @@ clock = pygame.time.Clock()
 pygame.font.init()
 myfont = pygame.font.SysFont('Arial', 15)
 
-window_name = "Vision server test"
+window_name = "Lidar view"
 frameWidth = 1500  # should be the same as in vision server
 frameHeight = 1200  # should be the same as in vision server
 size = [frameWidth, frameHeight]
@@ -27,27 +33,22 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption(window_name)
 center = (int(frameWidth / 2), int(frameHeight / 2))
 
-scale = 20
-
 try:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print("Socket successfully created")
 except socket.error as err:
     print("socket creation failed with error %s" % (err))
 
-port = 23
 
 try:
-    host_ip = socket.gethostbyname('192.168.0.20')
+    host_ip = socket.gethostbyname(IP)
 except socket.gaierror:
-
     # this means could not resolve the host
     print("there was an error resolving the host")
     sys.exit()
 
 # connecting to the server
 s.connect((host_ip, port))
-
 print("the socket has successfully connected")
 
 
@@ -59,9 +60,6 @@ def checksum(frame):
         result += int(i)
 
     return result == cs
-
-
-last_angle = 0
 
 
 def parseData(payload, payloadLen):
@@ -86,7 +84,8 @@ def parseData(payload, payloadLen):
     for i in range(nSamples):
         index = 5 + i * 3
         sampleID = payload[index]
-        distance = int.from_bytes(payload[index + 1:index + 3], byteorder='big', signed=False)
+        distance = int.from_bytes(
+            payload[index + 1:index + 3], byteorder='big', signed=False)
         ang = angStart + 22.5 * i / nSamples
         # print ('%.2f: %.2f mm'%(ang, distance))
 
@@ -96,13 +95,23 @@ def parseData(payload, payloadLen):
         if (ang < last_angle):
             pygame.display.flip()
             screen.fill(BLACK)
-            pygame.draw.circle(screen, ORANGE, center, 650 / scale)
+            pygame.draw.circle(screen, ORANGE, center, 1*400 / scale, 1) # 10cm circle
+            pygame.draw.circle(screen, ORANGE, center, 2*400 / scale, 1) # 20cm circle
+            pygame.draw.circle(screen, ORANGE, center, 3*400 / scale, 1) # 30cm circle
+            pygame.draw.circle(screen, ORANGE, center, 4*400 / scale, 1) # 40cm circle
+            pygame.draw.circle(screen, ORANGE, center, 5*400 / scale, 1) # 50cm circle
+            pygame.draw.circle(screen, ORANGE, center, 6*400 / scale, 1) # 60cm circle
+            pygame.draw.circle(screen, ORANGE, center, 7*400 / scale, 1) # 70cm circle
+            pygame.draw.circle(screen, ORANGE, center, 8*400 / scale, 1) # 80cm circle
+            pygame.draw.circle(screen, ORANGE, center, 9*400 / scale, 1) # 90cm circle
+            pygame.draw.circle(screen, ORANGE, center, 10*400 / scale, 1) # 100cm circle
+            pygame.draw.rect(screen,YELLOW,pygame.Rect(10, 10, 4000/scale, 10)) #draw 1meter in scale
 
         last_angle = ang
 
         pygame.draw.rect(screen, GREEN, pygame.Rect(x, y, 3, 3))
-
         pass
+    
     # pygame.display.flip()
     # screen.fill(BLACK)
 
@@ -114,11 +123,14 @@ def parseError(payload):
 
 
 def processFrame(frame):
-    if len(frame) < 3: return False
+    if len(frame) < 3:
+        return False
     frameLen = int.from_bytes(frame[1:3], byteorder='big', signed=False)
-    if len(frame) < frameLen + 2: return False  # include 2bytes checksum
+    if len(frame) < frameLen + 2:
+        return False  # include 2bytes checksum
 
-    if not checksum(frame): return True  # checksum failed
+    if not checksum(frame):
+        return True  # checksum failed
 
     try:
         protocalVer = frame[3]  # 0x00
