@@ -3,7 +3,7 @@ import socket  # for socket
 import sys
 import pygame
 
-IP = '192.168.8.150'
+IP = 'Lidar'
 port = 23
 scale = 20
 
@@ -52,6 +52,28 @@ s.connect((host_ip, port))
 print("the socket has successfully connected")
 
 
+def drawCircles():
+    pygame.draw.circle(screen, ORANGE, center, 1*400 / scale, 1)  # 10cm circle
+    pygame.draw.circle(screen, ORANGE, center, 2*400 / scale, 1)  # 20cm circle
+    pygame.draw.circle(screen, ORANGE, center, 3*400 / scale, 1)  # 30cm circle
+    pygame.draw.circle(screen, ORANGE, center, 4 *
+                       400 / scale, 1)  # 40cm circle
+    pygame.draw.circle(screen, ORANGE, center, 5 *
+                       400 / scale, 1)  # 50cm circle
+    pygame.draw.circle(screen, ORANGE, center, 6 *
+                       400 / scale, 1)  # 60cm circle
+    pygame.draw.circle(screen, ORANGE, center, 7 *
+                       400 / scale, 1)  # 70cm circle
+    pygame.draw.circle(screen, ORANGE, center, 8 *
+                       400 / scale, 1)  # 80cm circle
+    pygame.draw.circle(screen, ORANGE, center, 9 *
+                       400 / scale, 1)  # 90cm circle
+    pygame.draw.circle(screen, ORANGE, center, 10 *
+                       400 / scale, 1)  # 100cm circle
+    pygame.draw.rect(screen, YELLOW, pygame.Rect(
+        10, 10, 4000/scale, 10))  # draw 1meter in scale
+
+
 def checksum(frame):
     cs = int.from_bytes(frame[-2:], byteorder='big', signed=False)
     result = 0
@@ -95,23 +117,13 @@ def parseData(payload, payloadLen):
         if (ang < last_angle):
             pygame.display.flip()
             screen.fill(BLACK)
-            pygame.draw.circle(screen, ORANGE, center, 1*400 / scale, 1) # 10cm circle
-            pygame.draw.circle(screen, ORANGE, center, 2*400 / scale, 1) # 20cm circle
-            pygame.draw.circle(screen, ORANGE, center, 3*400 / scale, 1) # 30cm circle
-            pygame.draw.circle(screen, ORANGE, center, 4*400 / scale, 1) # 40cm circle
-            pygame.draw.circle(screen, ORANGE, center, 5*400 / scale, 1) # 50cm circle
-            pygame.draw.circle(screen, ORANGE, center, 6*400 / scale, 1) # 60cm circle
-            pygame.draw.circle(screen, ORANGE, center, 7*400 / scale, 1) # 70cm circle
-            pygame.draw.circle(screen, ORANGE, center, 8*400 / scale, 1) # 80cm circle
-            pygame.draw.circle(screen, ORANGE, center, 9*400 / scale, 1) # 90cm circle
-            pygame.draw.circle(screen, ORANGE, center, 10*400 / scale, 1) # 100cm circle
-            pygame.draw.rect(screen,YELLOW,pygame.Rect(10, 10, 4000/scale, 10)) #draw 1meter in scale
+            drawCircles()
 
         last_angle = ang
 
         pygame.draw.rect(screen, GREEN, pygame.Rect(x, y, 3, 3))
         pass
-    
+
     # pygame.display.flip()
     # screen.fill(BLACK)
 

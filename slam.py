@@ -4,7 +4,7 @@ import socket  # for socket
 import sys
 import pygame
 
-IP = '192.168.8.150'
+IP = 'Lidar'
 port = 23
 last_angle = 0
 mesurments = []
