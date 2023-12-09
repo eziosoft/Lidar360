@@ -18,7 +18,7 @@ class Lidar:
     def parseData(self, payload, payloadLen):
         speed = payload[0]
         speed = speed * 0.05  # r/s
-        # print ('RPM: %.2fr/s or %drpm'%(speed, speed*60))
+        print ('RPM: %.2fr/s or %drpm'%(speed, speed*60))
 
         angOffset = int.from_bytes(payload[1:3], byteorder='big', signed=True)
         angOffset = angOffset * 0.01
